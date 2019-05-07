@@ -1,65 +1,47 @@
-import pandas as pd
+import csv
+import json
+import pyspark
+from pprint import pprint
 
-cols = [
-    'FIPS Code', 'State', 'Area name',
-    'Percent of adults with less than a high school diploma, 1980',
-    'Percent of adults with a high school diploma only, 1980',
-    'Percent of adults completing some college (1-3 years), 1980',
-    'Percent of adults completing four years of college or higher, 1980',
-    'Percent of adults with less than a high school diploma, 1990',
-    'Percent of adults with a high school diploma only, 1990',
-    'Percent of adults completing some college or associate\'s degree, 1990',
-    'Percent of adults with a bachelor\'s degree or higher, 1990',
-    'Percent of adults with less than a high school diploma, 2000',
-    'Percent of adults with a high school diploma only, 2000',
-    'Percent of adults completing some college or associate\'s degree, 2000',
-    'Percent of adults with a bachelor\'s degree or higher, 2000',
-    'Percent of adults with less than a high school diploma, 2013-17',
-    'Percent of adults with a high school diploma only, 2013-17',
-    'Percent of adults completing some college or associate\'s degree, 2013-17',
-    'Percent of adults with a bachelor\'s degree or higher, 2013-17'
-]
+sc = pyspark.SparkContext()
+sc.setLogLevel("ERROR")
 
-attainment = pd.read_excel('education_attainment.xls', skiprows=4, usecols=cols)
-attainment.rename(
-    columns={
-        'FIPS Code':
-        'FIPS',
-        'Area name':
-        'Area',
-        'Percent of adults with less than a high school diploma, 1980':
-        '1980-0',
-        'Percent of adults with a high school diploma only, 1980':
-        '1980-1',
-        'Percent of adults completing some college (1-3 years), 1980':
-        '1980-2',
-        'Percent of adults completing four years of college or higher, 1980':
-        '1980-3',
-        'Percent of adults with less than a high school diploma, 1990':
-        '1990-0',
-        'Percent of adults with a high school diploma only, 1990':
-        '1990-1',
-        'Percent of adults completing some college or associate\'s degree, 1990':
-        '1990-2',
-        'Percent of adults with a bachelor\'s degree or higher, 1990':
-        '1990-3',
-        'Percent of adults with less than a high school diploma, 2000':
-        '2000-0',
-        'Percent of adults with a high school diploma only, 2000':
-        '2000-1',
-        'Percent of adults completing some college or associate\'s degree, 2000':
-        '2000-2',
-        'Percent of adults with a bachelor\'s degree or higher, 2000':
-        '2000-3',
-        'Percent of adults with less than a high school diploma, 2013-17':
-        '2013-0',
-        'Percent of adults with a high school diploma only, 2013-17':
-        '2013-1',
-        'Percent of adults completing some college or associate\'s degree, 2013-17':
-        '2013-2',
-        'Percent of adults with a bachelor\'s degree or higher, 2013-17':
-        '2013-3'
-    },
-    inplace=True)
+raw_education_data = sc.textFile(
+    'education_attainment.csv').mapPartitions(lambda line: csv.reader(line))
+education_header = raw_education_data.first()
+education_table = {key: idx for idx, key in enumerate(education_header)}
+education_data = raw_education_data.filter(lambda line: line !=
+                                           education_header)
 
-attainment.to_csv(path_or_buf='education_attainment.csv', index=False)
+
+def remove_trailing_chars(string):
+    last_idx = len(string) - 1
+    last_char = string[last_idx]
+    while last_idx and string[last_idx - 1] == last_char:
+        last_idx -= 1
+    return string[:last_idx + 1]
+
+
+def education_data_preprocess(line):
+    parsed_data = [None] * len(education_header)
+    for idx, key in enumerate(education_header):
+        if key == 'FIPS':
+            parsed_data[idx] = int(line[idx])
+        elif key == 'State':
+            parsed_data[idx] = line[idx].lower()
+        elif key == 'Area':
+            parsed_data[idx] = line[idx].replace('County', '').lower().replace(
+                ' ', '')
+        else:
+            try:
+                parsed_data[idx] = float(line[idx])
+            except ValueError:
+                parsed_data[idx] = 0.0
+    return tuple(parsed_data)
+
+
+valid_education = education_data.map(
+    education_data_preprocess).filter(lambda line: line[0] % 1000)
+
+print(valid_education.count())
+print(valid_education.take(5))
