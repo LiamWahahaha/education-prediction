@@ -6,6 +6,35 @@ from pyspark import SparkContext, SparkConf
 from tweet_utils import *
 from education_location_utils import *
 
+def aggregate_county_data(county_tweets_info, fips_dict):
+    fip = county_tweets_info[0]
+    education_info = fips_dict[fip]
+
+    county_tweets = county_tweets_info[1]
+
+    aggregate_record = {}
+    aggregate_record['fip'] = fip
+    
+    words_dict = {}
+    tweet_count = 0
+
+    for tweet_info in county_tweets:
+        tweet_count += 1
+        tweet_body = tweet_info['text']
+        tweet_words = tweet_body.split()
+        
+        for tweet_word in tweet_words:
+            if tweet_word not in words_dict:
+                words_dict[tweet_word] = 1
+            words_dict[tweet_word] += 1
+
+
+    aggregate_record['words'] = words_dict
+    aggregate_record['tweet_count'] = tweet_count
+    aggregate_record['education_info'] = education_info[-4:]
+
+    return aggregate_record
+
 
 if __name__ == "__main__":
     sc = SparkContext(conf=SparkConf())
@@ -61,3 +90,7 @@ if __name__ == "__main__":
     pprint(tweets_w_fips.take(25))
     pprint(tweets_w_fips.count())
 
+    #aggregate info for each county (words used, education levels, etc)
+    county_level_info = tweets_w_fips.map(lambda x : aggregate_county_data(x, fips_dict))
+    pprint(county_level_info.take(25))
+    pprint(county_level_info.count())
