@@ -28,6 +28,11 @@ def aggregate_county_data(county_tweets_info, fips_dict):
                 words_dict[tweet_word] = 1
             words_dict[tweet_word] += 1
 
+    total_word_freq = sum(words_dict.values())
+
+    for word in words_dict:
+        words_dict[word] /= total_word_freq
+
 
     aggregate_record['words'] = words_dict
     aggregate_record['tweet_count'] = tweet_count
