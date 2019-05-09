@@ -56,7 +56,8 @@ if __name__ == "__main__":
     # pprint(twitter_w_proper_area.count())
 
     tweets_w_fips = twitter_w_proper_area.filter(lambda x : x['fips'] != None)
-    tweets_w_fips = tweets_w_fips.groupBy(lambda x : x['fips'])
+    #tweets_w_fips = tweets_w_fips.groupBy(lambda x : x['fips'])
+    tweets_w_fips = tweets_w_fips.groupBy(lambda x : x['fips']).mapValues(list)
     pprint(tweets_w_fips.take(25))
     pprint(tweets_w_fips.count())
 
