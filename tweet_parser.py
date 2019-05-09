@@ -19,15 +19,14 @@ if __name__ == "__main__":
     raw_twitter_data = sc.textFile(twitter_file_list)
     raw_twitter_json = raw_twitter_data.map(json.loads)
 
-   # pprint(raw_twitter_json)
+    # pprint(raw_twitter_json)
     filtered_twitter = raw_twitter_json.map(filter_twitter_raw_data)
 
     twitter_en_user_w_loc = filtered_twitter.filter(english_user_with_location)
 
     twitter_w_proper_area = twitter_en_user_w_loc.map(add_state_county_features)
 
-    #pprint(twitter_w_proper_area.take(5))
-    
+
     #get all the data for education stats; mapped by FIPS and County name
     attainment_data_rdd = sc.textFile(attainment_data).mapPartitions(lambda line: csv.reader(line))
     attainment_data_header = attainment_data_rdd.first()
@@ -36,9 +35,11 @@ if __name__ == "__main__":
     attainment_data_rdd_values = attainment_data_rdd.value
     #get info by FIPS and county name
     fips_dict, county_dict = create_education_dicts(attainment_data_rdd_values)
-    # print(fips_dict)
     #print(county_dict)
     
+    #pprint(fips_dict)
+
+
     #map zipcodes to fips
     zipcode_data_rdd = sc.textFile(zipcode_data).mapPartitions(lambda line: csv.reader(line))
     zipcode_data_header = zipcode_data_rdd.first()
@@ -48,6 +49,7 @@ if __name__ == "__main__":
     #get info by zipcode
     zipcode_dict = create_zipcode_dict(zipcode_data_rdd_values)
     #pprint(zipcode_dict)
+
     
     twitter_w_proper_area = twitter_w_proper_area.map(lambda x : map_tweet_to_location(x, fips_dict, county_dict, zipcode_dict))
     # pprint(twitter_w_proper_area.take(1))
@@ -57,3 +59,4 @@ if __name__ == "__main__":
     tweets_w_fips = tweets_w_fips.groupBy(lambda x : x['fips'])
     pprint(tweets_w_fips.take(25))
     pprint(tweets_w_fips.count())
+
