@@ -19,8 +19,8 @@ cols = [
     'Percent of adults completing some college or associate\'s degree, 2013-17',
     'Percent of adults with a bachelor\'s degree or higher, 2013-17'
 ]
-
-attainment = pd.read_excel('education_attainment.xls', skiprows=4, usecols=cols)
+attainment = pd.read_excel(
+    'education_attainment.xls', skiprows=4, usecols=cols)
 attainment.rename(
     columns={
         'FIPS Code':
@@ -61,5 +61,5 @@ attainment.rename(
         '2013-3'
     },
     inplace=True)
-
+attainment.fillna(0.0, inplace=True)
 attainment.to_csv(path_or_buf='education_attainment.csv', index=False)

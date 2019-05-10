@@ -28,13 +28,9 @@ if __name__ == '__main__':
     twitter_w_proper_area = twitter_en_user_w_loc.map(add_state_county_features)
 
     # get all the data for education stats; mapped by FIPS and County name
-    attainment_data_rdd = sc.textFile(
-        attainment_data).mapPartitions(lambda line: csv.reader(line))
-    attainment_data_header = attainment_data_rdd.first()
-    attainment_data_rdd = attainment_data_rdd.filter(lambda line: line !=
-                                                     attainment_data_header)
-    attainment_data_rdd = sc.broadcast(attainment_data_rdd.collect())
-    attainment_data_rdd_values = attainment_data_rdd.value
+    attainment_data_rdd = preprocess_attainment_data(sc, attainment_data)
+    attainment_data_rdd_bc = sc.broadcast(attainment_data_rdd.collect())
+    attainment_data_rdd_values = attainment_data_rdd_bc.value
 
     # get info by FIPS and county name
     fips_dict, county_dict = create_education_dicts(attainment_data_rdd_values)

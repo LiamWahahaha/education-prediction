@@ -1,3 +1,4 @@
+import re
 from uszipcode import Zipcode
 from uszipcode import SearchEngine
 import nltk
@@ -7,7 +8,6 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
 from emoji import UNICODE_EMOJI
-import re
 
 
 def remove_trailing_chars(string):
