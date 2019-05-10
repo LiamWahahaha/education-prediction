@@ -12,3 +12,10 @@ $ python3 tweet_parser.py
 ```
 tweet_parser.py will generate 2 intermediate files. one is a csv file, another is a json file.
 ## Analysis and Modeling
+### Hypothesis Testing
+* Whether the word usage in the same education group are similar enough?
+* Whether the word usage in different education group are different enough?
+
+
+## Reference
+[1] County Tweet Lexical Bank: https://github.com/wwbp/county_tweet_lexical_bank (U.S. County level word and topic loading derived from a 10% Twitter sample from 2009-2015.)
