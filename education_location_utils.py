@@ -1,4 +1,6 @@
+import sys
 import csv
+from collections import defaultdict
 from uszipcode import Zipcode
 from uszipcode import SearchEngine
 
@@ -27,13 +29,27 @@ def preprocess_attainment_data(sc, attainment_data_file):
     return attainment_data_rdd
 
 
-def education_statistics(header, attainment_data_rdd_values):
-    table = {key: idx for idx, key in enumerate(header)}
-    for row in attainment_data_rdd_values:
-        try:
-            rowfloat(row[table['1980-3']])
-        except:
-            print(row)
+def map_edcation_level(edcation_level):
+    return ''.join(['{:5f}'.format(str(val)) for val in education_level[-4:]])
+
+
+def education_statistic(attainment_data_rdd_values, top_nth=10):
+    education_lv = defaultdict(list)
+    for idx in range(4):
+        education_lv[idx] = sorted(
+            attainment_data_rdd_values,
+            key=lambda row: row[~idx],
+            reverse=True)
+        print('education level{} top {} counties:'.format(~idx, top_nth))
+        for nth in range(top_nth):
+            print('{:>9s}{:^6s}{:<29s}{:>7.2f} {:>7.2f} {:>7.2f} {:>7.2f}'\
+                .format(
+                    education_lv[idx][nth][0], education_lv[idx][nth][1],
+                    education_lv[idx][nth][2], education_lv[idx][nth][-4],
+                    education_lv[idx][nth][-3], education_lv[idx][nth][-2],
+                    education_lv[idx][nth][-1]))
+        print()
+    return education_lv
 
 
 def create_education_dicts(attainment_data_rdd_values):
