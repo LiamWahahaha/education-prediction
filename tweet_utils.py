@@ -59,7 +59,9 @@ def map_tweet_to_location(tweet_info, fips_dict, county_dict, zipcode_dict):
         stop_words.add(' ')
 
         tweet_body_tokens = tweet_body.split()
-        filtered_sentence = [w for w in tweet_body_tokens if not w in stop_words]
+        filtered_sentence = [
+            w for w in tweet_body_tokens if not w in stop_words
+        ]
 
         tweet_info['text'] = ' '.join(filtered_sentence)
 
@@ -148,14 +150,6 @@ def is_url(text):
 
 def is_emoji(text):
     return any(map(lambda char: char in UNICODE_EMOJI, text))
-
-
-def transfer2intermediate(line, header):
-    return [line[key] for key in header]
-
-
-def to_csv(line):
-    return ','.join(str(data) for data in line)
 
 
 def aggregate_personal_data(line, fips_dict):
