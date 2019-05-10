@@ -22,11 +22,11 @@ def remove_trailing_chars(string):
     return string[:last_idx + 1]
 
 
-'''
-For a given tweet, tries to map the tweet to a known location
-If it's from a know location, the tweet is assigned the FIP and the body (text) is cleaned for processing
-'''
 def map_tweet_to_location(tweet_info, fips_dict, county_dict, zipcode_dict):
+    '''
+    For a given tweet, tries to map the tweet to a known location
+    If it's from a know location, the tweet is assigned the FIP and the body (text) is cleaned for processing
+    '''
     county = tweet_info['county']
     state = tweet_info['state']
     coordinates = tweet_info['coordinates']
@@ -59,9 +59,7 @@ def map_tweet_to_location(tweet_info, fips_dict, county_dict, zipcode_dict):
         stop_words.add(' ')
 
         tweet_body_tokens = tweet_body.split()
-        filtered_sentence = [
-            w for w in tweet_body_tokens if not w in stop_words
-        ]
+        filtered_sentence = [w for w in tweet_body_tokens if not w in stop_words]
 
         tweet_info['text'] = ' '.join(filtered_sentence)
 
@@ -152,6 +150,47 @@ def is_emoji(text):
     return any(map(lambda char: char in UNICODE_EMOJI, text))
 
 
+def transfer2intermediate(line, header):
+    return [line[key] for key in header]
+
+
+def to_csv(line):
+    return ','.join(str(data) for data in line)
+
+
+def aggregate_personal_data(line, fips_dict):
+    fip = line['fips']
+    user = line['user_id']
+    text = line['text']
+    filtered_text = []
+    emoji_count = 0
+    url_count = 0
+    education_info = fips_dict[fip]
+    aggregate_record = dict()
+
+    tweet_words = text.lower().split()
+    for tweet_word in tweet_words:
+        if is_url(tweet_word):
+            url_count += 1
+        elif is_emoji(tweet_word):
+            emoji_count += 1
+        else:
+            filtered_text.append(tweet_word)
+
+    aggregate_record['fip'] = fip
+    aggregate_record['user_id'] = user
+    aggregate_record['text'] = text
+    aggregate_record['filtered_text'] = ' '.join(filtered_text)
+    aggregate_record['url_count'] = url_count
+    aggregate_record['emoji_count'] = emoji_count
+    aggregate_record['education_level_1'] = education_info[-4]
+    aggregate_record['education_level_2'] = education_info[-3]
+    aggregate_record['education_level_3'] = education_info[-2]
+    aggregate_record['education_level_4'] = education_info[-1]
+
+    return aggregate_record
+
+
 def aggregate_county_data(county_tweets_info, fips_dict):
     fip = county_tweets_info[0]
     education_info = fips_dict[fip]
@@ -169,7 +208,7 @@ def aggregate_county_data(county_tweets_info, fips_dict):
     for tweet_info in county_tweets:
         tweet_count += 1
         tweet_body = tweet_info['text']
-        tweet_words = tweet_body.split()
+        tweet_words = tweet_body.lower().split()
 
         for tweet_word in tweet_words:
             if is_url(tweet_word):
