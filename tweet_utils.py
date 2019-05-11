@@ -46,10 +46,14 @@ def map_tweet_to_location(tweet_info, fips_dict, county_dict, zipcode_dict):
         result = zipcode_search.by_coordinates(lat, long, radius=10, returns=1)
         if len(result) != 0:
             place = result[0]
-            fip = zipcode_dict[place.zipcode]
-            if fip in fips_dict:
-                #tweet_info['fips'] = fip
-                tweet_info['education_stats'] = fips_dict[fip]
+            try:
+                fip = zipcode_dict[place.zipcode]
+                if fip in fips_dict:
+                    #tweet_info['fips'] = fip
+                    tweet_info['education_stats'] = fips_dict[fip]
+            except KeyError:
+                print('Cannot map this zipcode {} to fips'.format(
+                    place.zipcode))
 
     #clean the tweet body by getting rid of stop words
     if tweet_info['fips'] != None:
