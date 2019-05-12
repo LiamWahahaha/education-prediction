@@ -189,6 +189,35 @@ def aggregate_personal_data(line, fips_dict):
     return aggregate_record
 
 
+def transform_personal_to_county(county_tweets_info, fips_dict):
+    fip = county_tweets_info[0]
+    education_info = fips_dict[fip]
+    county_tweets = county_tweets_info[1]
+    transformed_record = dict()
+    transformed_record['fip'] = fip
+    words_dict = defaultdict(float)
+    tweet_count = len(county_tweets)
+    emoji_count = 0
+    url_count = 0
+    for tweet_info in county_tweets:
+        tweet_body = tweet_info['filtered_text']
+        tweet_words = tweet_body.split()
+        # how to measure the emoji and url?
+        emoji_count += tweet_info['emoji_count']
+        url_count += tweet_info['url_count']
+        for tweet_word in tweet_words:
+            words_dict[tweet_word] += 1
+    total_word_freq = sum(words_dict.values())
+    for word in words_dict:
+        words_dict[word] /= total_word_freq
+    transformed_record['words'] = words_dict
+    transformed_record['tweet_count'] = tweet_count
+    transformed_record['avg_url_count'] = url_count / tweet_count
+    transformed_record['avg_emoji_count'] = emoji_count / tweet_count
+    transformed_record['education_info'] = education_info[-4:]
+    return transformed_record
+
+
 def aggregate_county_data(county_tweets_info, fips_dict):
     fip = county_tweets_info[0]
     education_info = fips_dict[fip]
