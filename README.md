@@ -17,7 +17,8 @@ tweet_parser.py will generate 2 intermediate files. one is a csv file, another i
 
 2014-10: Ongoing
 
-2018-10: https://drive.google.com/file/d/15USANDjsysTDHZBX2IBXSaQCr7--3pbt/view?usp=sharing (raw data 52GB -> 3GB)
+2018-10(3GB): https://drive.google.com/file/d/15USANDjsysTDHZBX2IBXSaQCr7--3pbt/view?usp=sharing 
+* raw data source(52GB): https://archive.org/details/archiveteam-twitter-stream-2018-10
 ### Hypothesis Testing
 * Whether the word usage in the same education group are similar enough?
 * Whether the word usage in different education group are different enough?
