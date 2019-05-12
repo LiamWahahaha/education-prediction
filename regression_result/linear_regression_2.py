@@ -53,9 +53,13 @@ def transform_personal_to_county__modified(county_tweets_info):
     transformed_record['education_info'] = [sample["education_level_1"], sample["education_level_2"], sample["education_level_3"], sample["education_level_4"]]
     return transformed_record
 
+def person2county(sc, argv):
+    rdd = sc.textFile("p-2018-10-08.json").map(json.loads)
+    tweets_groupby_fips = rdd.groupBy(lambda x: x['fip']).mapValues(list)
+    testRdd = tweets_groupby_fips.map(lambda x: transform_personal_to_county__modified(x))
+    return testRdd
 
-
-def runTests(sc, argv, level):    
+def runTests(sc, argv, level, testRdd, fileStr):    
 #    testFile = './intermediate_01.csv'
     # contyFile = argv[2]#"./countyoutcomes.csv"
     
@@ -69,11 +73,6 @@ def runTests(sc, argv, level):
     LEVEL = level
     WORD_COUNT_THRESHOLD = 3
     
-    
-    
-    rdd = sc.textFile("p-2018-10-08.json").map(json.loads)
-    tweets_groupby_fips = rdd.groupBy(lambda x: x['fip']).mapValues(list)
-    testRdd = tweets_groupby_fips.map(lambda x: transform_personal_to_county__modified(x))
     
 #    pprint(testRdd.take(10))
 
@@ -179,7 +178,7 @@ def runTests(sc, argv, level):
 ##    
 ##    pprint(testRdd.take(20))  #uncomment to see data
     
-    fileName = "./word_result_{}.csv".format(LEVEL)
+    fileName = "./word_result_{}_for_{}.csv".format(LEVEL, fileStr)
     df = pd.DataFrame(resultList1)
     df.to_csv(fileName, index=False)
 #    
@@ -196,19 +195,22 @@ if __name__ == "__main__":
     sc.stop()
     sc = SparkContext(conf=conf)
     
+    fileName = "./p-2018-10-08.json"
+    fileStr = fileName.strip("./").split(".")[0]
+    outputStr = "word_result_for_{}.csv".format(fileStr)
+    
+    testRdd = person2county(sc, sys.argv)
 #    runTests(sc, sys.argv, level)
+    dfList = []
     for level in range(4):
-        runTests(sc, sys.argv, level)
+        runTests(sc, sys.argv, level, testRdd, fileStr)
+        df = pd.read_csv("./word_result_{}_for_{}.csv".format(level, fileStr))
+        dfList.append(df)
         
-        
-        dfList = []
-        for i in range(4):
-            df = pd.read_csv("./word_result_{}.csv".format(i))
-            dfList.append(df)
-        df = pd.concat(dfList, ignore_index=True)
-        df.columns = "word level slope pval count".split(" ")
-        df.to_csv("word_result.csv", index=False)
-        
+    df = pd.concat(dfList, ignore_index=True)
+    df.columns = "word level slope pval count".split(" ")
+    df.to_csv(outputStr, index=False)
+    
         
         
         
@@ -217,28 +219,28 @@ if __name__ == "__main__":
         
         
 
-        df = pd.read_csv("./word_result.csv")
-        df.columns = "word level slope pval count".split(" ")
-        # df.pval = df.pval * df.shape[0]
-        # df = df[df.pval < 0.2]
-        df;
-        
-        df = df[(df.level == 3) & (df["count"] > 15) & (df.pval < 0.2)]
-        
-        TOP_N = 20
-        print("The top 20 word positively correlated:")
-        df = df.sort_values(by="slope", ascending=False)
-        df = df.reset_index(drop=True)
-        # df.index = df.index + 1
-        df.index = df.index + 1
-        print(df.head(TOP_N))
-        print("\n\n")
-        
-        print("The top 20 word negatively correlated:")
-        df = df.sort_values(by="slope", ascending=True)
-        df = df.reset_index(drop=True)
-        # df.index = df.index + 1
-        df.index = df.index + 1
-        print(df.head(TOP_N))
-        print("\n\n")
+    df = pd.read_csv(outputStr)
+    df.columns = "word level slope pval count".split(" ")
+    # df.pval = df.pval * df.shape[0]
+    # df = df[df.pval < 0.2]
+    df;
+    
+    df = df[(df.level == 3) & (df["count"] > 15) & (df.pval < 0.2)]
+    
+    TOP_N = 20
+    print("The top 20 word positively correlated:")
+    df = df.sort_values(by="slope", ascending=False)
+    df = df.reset_index(drop=True)
+    # df.index = df.index + 1
+    df.index = df.index + 1
+    print(df.head(TOP_N))
+    print("\n\n")
+    
+    print("The top 20 word negatively correlated:")
+    df = df.sort_values(by="slope", ascending=True)
+    df = df.reset_index(drop=True)
+    # df.index = df.index + 1
+    df.index = df.index + 1
+    print(df.head(TOP_N))
+    print("\n\n")
     
