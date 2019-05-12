@@ -1,4 +1,5 @@
 import os
+import sys
 '''
     For the given path, get the List of all json files in the directory tree
 '''
@@ -22,7 +23,15 @@ def get_list_of_files(dir_name):
 
 
 def main():
-    dir_name = 'twitter'
+    dir_name = None
+    file_name = 'twitter_file_list.txt'
+
+    try:
+        folder = 'twitter/'
+        dir_name = sys.argv[1]
+        file_name = sys.argv[2]
+    except:
+        print('Write files to default directory')
 
     # Get the list of all files in directory tree at given path
     files = list()
@@ -33,7 +42,7 @@ def main():
         ]
 
     # Write the list of json files to twitter_file_list.txt
-    f = open("twitter/twitter_file_list.txt", "w")
+    f = open(folder + file_name, "w")
     f.write(','.join(files))
     f.close()
 
