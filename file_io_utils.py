@@ -23,7 +23,7 @@ def transfer2intermediate(line, header):
 
 
 def to_csv(line):
-    return ','.join(str(data) for data in line)
+    return '\t'.join(str(data) for data in line)
 
 
 def write_output_file(rdd, filepath):
