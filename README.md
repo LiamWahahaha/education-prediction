@@ -12,6 +12,10 @@ $ python3 tweet_parser.py
 ```
 tweet_parser.py will generate 2 intermediate files. one is a csv file, another is a json file.
 ## Analysis and Modeling
+### Preprocessed personal level tweet data
+2013-10: Ongoing
+2014-10: Ongoing
+2018-10: https://drive.google.com/file/d/15USANDjsysTDHZBX2IBXSaQCr7--3pbt/view?usp=sharing (raw data 52GB -> 3GB)
 ### Hypothesis Testing
 * Whether the word usage in the same education group are similar enough?
 * Whether the word usage in different education group are different enough?
