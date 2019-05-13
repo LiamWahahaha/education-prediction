@@ -13,9 +13,20 @@ $ python3 tweet_parser.py
 tweet_parser.py will generate 2 intermediate files. one is a csv file, another is a json file.
 ## Analysis and Modeling
 ### Preprocessed personal level tweet data
-2013-10: Ongoing
+2013-10(1GB): https://drive.google.com/file/d/1jqOjM_7CHcmNxnkolbn4KdDPWAb47HI0/view?usp=sharing
+* raw data source (43.6GB): https://archive.org/details/archiveteam-twitter-stream-2013-10
 
 2014-10: Ongoing
+* raw data source (47.6GB): https://archive.org/details/archiveteam-twitter-stream-2014-10
+
+2015-10:
+* raw data source (42.9GB): https://archive.org/details/archiveteam-twitter-stream-2015-10
+
+2016-10: Ongoing
+* raw data source(40GB): https://archive.org/details/archiveteam-twitter-stream-2016-10
+
+2017-10: Ongoing
+* raw data source(25.5GB): https://archive.org/details/archiveteam-twitter-stream-2017-10
 
 2018-10(3GB): https://drive.google.com/file/d/15USANDjsysTDHZBX2IBXSaQCr7--3pbt/view?usp=sharing 
 * raw data source(52GB): https://archive.org/details/archiveteam-twitter-stream-2018-10
