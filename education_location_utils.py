@@ -1,25 +1,25 @@
-import sys
-import csv
-from collections import defaultdict
-from uszipcode import Zipcode
-from uszipcode import SearchEngine
-
 ''''
 Liam Wang: 111407491
 Oswaldo Crespo: 107700568
 Varun Goel: 109991128
 Ziang Wang: 112077534
 '''
-
 '''
 A utility file that has the code that was used to read the education attainment files and census files to match zipcodes
 to counties
 '''
 
-'''
-We observed cases where people reported their location to be Miamiiiiii instead of Miami. This helps catch such sitations
-'''
+import sys
+import csv
+from collections import defaultdict
+from uszipcode import Zipcode
+from uszipcode import SearchEngine
+
+
 def remove_trailing_chars(string):
+    '''
+    We observed cases where people reported their location to be Miamiiiiii instead of Miami. This helps catch such sitations
+    '''
     if not string:
         return string
     last_idx = len(string) - 1
@@ -40,6 +40,7 @@ def preprocess_attainment_data(sc, attainment_data_file):
             .mapPartitions(lambda line: csv.reader(line))
     header = rdd.first()
     attainment_data_rdd = rdd.filter(lambda line: line != header).map(str2float)
+
     return attainment_data_rdd
 
 
@@ -48,13 +49,18 @@ def map_edcation_level(edcation_level):
 
 
 def education_statistic(attainment_data_rdd_values, top_nth=10):
+    '''
+    return a dictionary that contains counties that were sorted by each education level
+    '''
     education_lv = defaultdict(list)
+
     for idx in range(4):
         education_lv[idx] = sorted(
             attainment_data_rdd_values,
             key=lambda row: row[~idx],
             reverse=True)
         print('education level{} top {} counties:'.format(~idx, top_nth))
+
         for nth in range(top_nth):
             print('{:>9s}{:^6s}{:<29s}{:>7.2f} {:>7.2f} {:>7.2f} {:>7.2f}'\
                 .format(
@@ -63,6 +69,7 @@ def education_statistic(attainment_data_rdd_values, top_nth=10):
                     education_lv[idx][nth][-3], education_lv[idx][nth][-2],
                     education_lv[idx][nth][-1]))
         print()
+
     return education_lv
 
 
@@ -80,6 +87,7 @@ def create_education_dicts(attainment_data_rdd_values):
         fips_dict[fips] = attainment_data_rdd_value[1:]
         county_dict[county] = attainment_data_rdd_value[
             0:2] + attainment_data_rdd_value[3:]
+
         #map state names as well
         if (int(fips) % 1000 == 0):
             state_name = attainment_data_rdd_value[1].lower()

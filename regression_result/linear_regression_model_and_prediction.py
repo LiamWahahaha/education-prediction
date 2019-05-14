@@ -4,6 +4,33 @@ Oswaldo Crespo: 107700568
 Varun Goel: 109991128
 Ziang Wang: 112077534
 '''
+'''
+This file is responsible for running hypothesis tests and making prediction by user. 
+It will read intermediate data which we collect from tweet_parser.py and then separate 
+the intermediate data into train set and test set in 7:3 randomly. 
+
+For training model, this program groups the data by county, counts the relative frequency 
+for each word and does linear regression on each word to get the slope and p-value. 
+P-value are corrected by using Bonferroni correction. 
+
+For prediction, this program use trained result to predict each person's education level.
+Then it will count the education level distribution in county level and count the absolute
+error by comparing the real education attainment.
+
+This code was run locally, as well as run on the Google Cloud DataProc cluster using HDFS 
+with following configurations:
+Name    cluster-cse545
+Master node 
+Standard (1 master, N workers)
+Machine type    n1-standard-2 (2 vCPU, 7.50 GB memory)
+Primary disk type   pd-standard
+Primary disk size   512 GB
+Worker nodes    4
+Machine type    n1-highmem-4 (4 vCPU, 26.0 GB memory)
+Primary disk type   pd-standard
+Primary disk size   128 GB
+Local SSDs  0
+'''
 
 import sys
 import re
@@ -26,8 +53,13 @@ from pprint import pprint
 INTERMEDIATE_FILE = './twitter/p-2013.json'
 STOP_WORD_FILE = './StopWords.txt'
 WORD_COUNT_THRESHOLD = 3
+ALPHA = 0.05
+POSITIVE_IMPORTANCY = 0.1
 
 
+###########################################################
+# functions for loading intermediate json file
+###########################################################
 def decode(line):
     """
     load intermediate file into json format, return a fake record
@@ -158,6 +190,10 @@ def learn_word_importancy(sc, train_rdd):
             return ('ErrorData', np.array([]))
 
     def linear_regression(tuple_, level, bonferroni_correction):
+        '''
+        if corrected p-value is greater than alpha, then set the importancy (slope) to 0,
+        if slop is less than positive importancy, then set the importancy (slope) to 0
+        '''
         key, val = tuple_
         x, y = val[:, 0], val[:, 1]
         norm_x = (x - x.mean()) / x.std()
@@ -165,6 +201,10 @@ def learn_word_importancy(sc, train_rdd):
         slope, intercept, r_value, p_value, std_err = stats.linregress(
             norm_x, norm_y)
         corrected_p_value = p_value * bonferroni_correction
+
+        if corrected_p_value > ALPHA or slope < POSITIVE_IMPORTANCY:
+            slop = 0
+
         return (key, (level, slope, corrected_p_value, val.shape[0]))
 
     def word_dictionary(word_importancy_rdd):

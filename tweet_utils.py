@@ -1,31 +1,30 @@
-import re
-from uszipcode import Zipcode
-from uszipcode import SearchEngine
-import nltk
-nltk.download('stopwords')
-#nltk.download('punkt')
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from collections import defaultdict
-from emoji import UNICODE_EMOJI
-
 ''''
 Liam Wang: 111407491
 Oswaldo Crespo: 107700568
 Varun Goel: 109991128
 Ziang Wang: 112077534
 '''
-
 '''
 A utility file that converts raw tweet data to the format desired by us. The tweet body is stripped of stop words.
 The tweet's location is first checked via the user provided location to see if it maps to a county that we know of.
 If not, we check the coordinates. If yes, we map the coordinates to a zipcode to check which county the tweet belongs to.
 '''
 
-'''
-We observed cases where people reported their location to be Miamiiiiii instead of Miami. This helps catch such sitations
-'''
+import re
+from uszipcode import Zipcode
+from uszipcode import SearchEngine
+import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from collections import defaultdict
+from emoji import UNICODE_EMOJI
+
+
 def remove_trailing_chars(string):
+    '''
+    We observed cases where people reported their location to be Miamiiiiii instead of Miami. This helps catch such sitations
+    '''
     if not string:
         return string
     last_idx = len(string) - 1
@@ -59,6 +58,7 @@ def map_tweet_to_location(tweet_info, fips_dict, county_dict, zipcode_dict):
         long = coordinates[1]
         zipcode_search = SearchEngine(simple_zipcode=False)
         result = zipcode_search.by_coordinates(lat, long, radius=10, returns=1)
+
         if len(result) != 0:
             place = result[0]
             try:
@@ -182,6 +182,7 @@ def aggregate_personal_data(line, fips_dict):
     aggregate_record = dict()
 
     tweet_words = text.lower().split()
+
     for tweet_word in tweet_words:
         if is_url(tweet_word):
             url_count += 1
@@ -202,35 +203,6 @@ def aggregate_personal_data(line, fips_dict):
     aggregate_record['education_level_4'] = education_info[-1]
 
     return aggregate_record
-
-
-def transform_personal_to_county(county_tweets_info, fips_dict):
-    fip = county_tweets_info[0]
-    education_info = fips_dict[fip]
-    county_tweets = county_tweets_info[1]
-    transformed_record = dict()
-    transformed_record['fip'] = fip
-    words_dict = defaultdict(float)
-    tweet_count = len(county_tweets)
-    emoji_count = 0
-    url_count = 0
-    for tweet_info in county_tweets:
-        tweet_body = tweet_info['filtered_text']
-        tweet_words = tweet_body.split()
-        # how to measure the emoji and url?
-        emoji_count += tweet_info['emoji_count']
-        url_count += tweet_info['url_count']
-        for tweet_word in tweet_words:
-            words_dict[tweet_word] += 1
-    total_word_freq = sum(words_dict.values())
-    for word in words_dict:
-        words_dict[word] /= total_word_freq
-    transformed_record['words'] = words_dict
-    transformed_record['tweet_count'] = tweet_count
-    transformed_record['avg_url_count'] = url_count / tweet_count
-    transformed_record['avg_emoji_count'] = emoji_count / tweet_count
-    transformed_record['education_info'] = education_info[-4:]
-    return transformed_record
 
 
 def aggregate_county_data(county_tweets_info, fips_dict):
