@@ -1,6 +1,18 @@
+''''
+Liam Wang: 111407491
+Oswaldo Crespo: 107700568
+Varun Goel: 109991128
+Ziang Wang: 112077534
+'''
+
+'''
+A utility file that houses all the code used for writing the collected data to 
+a json or csv file.
+This was required for building the training datasets for our model
+'''
+
 import sys
 import json
-
 
 def get_output_filename():
     output_files = {

@@ -1,3 +1,10 @@
+''''
+Liam Wang: 111407491
+Oswaldo Crespo: 107700568
+Varun Goel: 109991128
+Ziang Wang: 112077534
+'''
+
 import sys
 import csv
 from pprint import pprint

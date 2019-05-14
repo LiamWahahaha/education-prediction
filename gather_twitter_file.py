@@ -1,7 +1,15 @@
 import os
 import sys
+''''
+Liam Wang: 111407491
+Oswaldo Crespo: 107700568
+Varun Goel: 109991128
+Ziang Wang: 112077534
 '''
-    For the given path, get the List of all json files in the directory tree
+
+
+'''
+For the given path, get the List of all json files in the directory tree
 '''
 
 

@@ -1,3 +1,17 @@
+''''
+Liam Wang: 111407491
+Oswaldo Crespo: 107700568
+Varun Goel: 109991128
+Ziang Wang: 112077534
+'''
+
+'''
+This file is responsible for handling the raw twitter data that we collected
+and filtering out tweets that map to a US county or zipcode for which we have education data available.
+Valid tweets are then mapped to the county they came from (using FIPS) and a record is created for tweets (based on county).
+Spark was used to perform the computations. This code was run locally, as well as on the cluster using HDFS.
+'''
+
 import csv
 import json
 from pprint import pprint
@@ -7,6 +21,7 @@ from education_location_utils import *
 from file_io_utils import *
 
 if __name__ == '__main__':
+    #the file where the parsed tweets will be written to
     output_files = get_output_filename()
     pprint(output_files)
     sc = SparkContext(conf=SparkConf())

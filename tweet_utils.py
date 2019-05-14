@@ -9,7 +9,22 @@ from nltk.tokenize import word_tokenize
 from collections import defaultdict
 from emoji import UNICODE_EMOJI
 
+''''
+Liam Wang: 111407491
+Oswaldo Crespo: 107700568
+Varun Goel: 109991128
+Ziang Wang: 112077534
+'''
 
+'''
+A utility file that converts raw tweet data to the format desired by us. The tweet body is stripped of stop words.
+The tweet's location is first checked via the user provided location to see if it maps to a county that we know of.
+If not, we check the coordinates. If yes, we map the coordinates to a zipcode to check which county the tweet belongs to.
+'''
+
+'''
+We observed cases where people reported their location to be Miamiiiiii instead of Miami. This helps catch such sitations
+'''
 def remove_trailing_chars(string):
     if not string:
         return string

@@ -4,7 +4,21 @@ from collections import defaultdict
 from uszipcode import Zipcode
 from uszipcode import SearchEngine
 
+''''
+Liam Wang: 111407491
+Oswaldo Crespo: 107700568
+Varun Goel: 109991128
+Ziang Wang: 112077534
+'''
 
+'''
+A utility file that has the code that was used to read the education attainment files and census files to match zipcodes
+to counties
+'''
+
+'''
+We observed cases where people reported their location to be Miamiiiiii instead of Miami. This helps catch such sitations
+'''
 def remove_trailing_chars(string):
     if not string:
         return string

@@ -1,3 +1,10 @@
+''''
+Liam Wang: 111407491
+Oswaldo Crespo: 107700568
+Varun Goel: 109991128
+Ziang Wang: 112077534
+'''
+
 # -*- coding: utf-8 -*-
 """
 Created on Thu Apr 18 17:02:57 2019

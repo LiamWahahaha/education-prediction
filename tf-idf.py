@@ -1,3 +1,10 @@
+''''
+Liam Wang: 111407491
+Oswaldo Crespo: 107700568
+Varun Goel: 109991128
+Ziang Wang: 112077534
+'''
+
 # Reference:
 # https://towardsdatascience.com/tfidf-for-piece-of-text-in-python-43feccaa74f8
 # https://medium.freecodecamp.org/how-to-process-textual-data-using-tf-idf-in-python-cd2bbc0a94a3
