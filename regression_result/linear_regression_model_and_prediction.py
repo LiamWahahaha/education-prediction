@@ -2,6 +2,7 @@ import sys
 import re
 import json
 import csv
+from collections import defaultdict
 from random import random
 from pyspark import SparkContext, SparkConf
 
@@ -15,9 +16,31 @@ from pprint import pprint
 ##################################
 # Control variables
 ##################################
-INTERMEDIATE_FILE = './twitter/p-2013.json,./twitter/p-2014.json,./twitter/p-2015.json,./twitter/p-2016.json,./twitter/p-2017.json'
+INTERMEDIATE_FILE = './twitter/p-2013.json'
 STOP_WORD_FILE = './StopWords.txt'
 WORD_COUNT_THRESHOLD = 3
+
+
+def decode(line):
+    """
+    load intermediate file into json format, return a fake record
+    if the json.loads failed
+    """
+    try:
+        return json.loads(line)
+    except:
+        fake_record = {}
+        fake_record['fip'] = 0
+        fake_record['user_id'] = 0
+        fake_record['text'] = ''
+        fake_record['filtered_text'] = ''
+        fake_record['url_count'] = 0
+        fake_record['emoji_count'] = 0
+        fake_record['education_level_1'] = 0
+        fake_record['education_level_2'] = 0
+        fake_record['education_level_3'] = 0
+        fake_record['education_level_4'] = 0
+        return fake_record
 
 
 ###########################################################
@@ -80,7 +103,6 @@ def transform_personal_to_county_level(county_tweets_info):
     total_word_freq = sum(words_dict.values())
     for word in words_dict:
         words_dict[word] /= total_word_freq
-
     county_level_record['words'] = words_dict
     county_level_record['tweet_count'] = tweet_count
     county_level_record['avg_url_count'] = url_count / tweet_count
@@ -100,6 +122,17 @@ def person2county(train_rdd):
 
 
 def learn_word_importancy(sc, train_rdd):
+    """
+    return a rdd with 
+    key: word
+    value: a dictionary,
+        {
+            'slope': [],
+            'pval': [],
+            'count': []
+        }, each list contains 4 values which map to education level
+    """
+
     def flatMap_func(e, level):
         fip = int(e['fip'])
         education_info = float(e["education_info"][level]) / 100.0
@@ -108,11 +141,14 @@ def learn_word_importancy(sc, train_rdd):
                 for key, value in words.items()]
 
     def to_list(e):
-        k, iterable = e
-        r = []
-        for e in iterable:
-            r.append([e[2], e[3]])
-        return (k, np.array(r))
+        try:
+            k, iterable = e
+            r = []
+            for e in iterable:
+                r.append([e[2], e[3]])
+            return (k, np.array(r))
+        except:
+            return ('ErrorData', np.array([]))
 
     def linear_regression(tuple_, level, bonferroni_correction):
         key, val = tuple_
@@ -236,27 +272,25 @@ def classify_person(e, word_dict_bc):
 
 def prediction2freq(group_by_res):
     fip, edu_list = group_by_res
-    edu_info = np.array(eL[0]["education_info"]) / 100.0
+    edu_info = np.array(edu_list[0]["education_info"]) / 100.0
     pred_list = [e["predicted_level"] for e in edu_list]
     unique, counts = np.unique(pred_list, return_counts=True)
     count_dict = dict(zip(unique, counts))
     count_list = np.array([count_dict.get(level, 0) for level in range(4)])
-    pred_level_l = count_l / count_l.sum()
-    error = np.abs(pred_levelL - edu_info).mean()
+    pred_level_list = count_list / count_list.sum()
+    error = np.abs(pred_level_list - edu_info).mean()
     return (fip, edu_info, pred_level_list, error)
 
 
 if __name__ == "__main__":
-    conf = SparkConf()
-    sc = SparkContext.getOrCreate()
-    sc.stop()
-    sc = SparkContext(conf=conf)
+    sc = SparkContext(conf=SparkConf())
+    sc.setLogLevel('ERROR')
 
     #########################################################################
     # read intermediate json file and separate it into train set and test set
     #########################################################################
     intermediate_rdd = sc.textFile(INTERMEDIATE_FILE)
-    train_test_label_rdd = intermediate_rdd.map(json.loads)\
+    train_test_label_rdd = intermediate_rdd.map(lambda x: decode(x))\
                                            .map(assign_train_test_label)
     train_test_label_rdd.persist()
 
@@ -270,7 +304,7 @@ if __name__ == "__main__":
     #####################################################
     county_level_train_rdd = person2county(p_level_raw_train_rdd)
     word_importancy_rdds = learn_word_importancy(sc, county_level_train_rdd)
-    word_importancy_list = word_dict_rdds.collect()
+    word_importancy_list = word_importancy_rdds.collect()
     word_importancy_dict = {
         word: importancy
         for word, importancy in word_importancy_list
