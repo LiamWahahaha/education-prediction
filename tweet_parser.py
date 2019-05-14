@@ -49,7 +49,7 @@ if __name__ == '__main__':
     f = open('twitter/twitter_file_list.txt')
     twitter_file_list = f.readline()
     raw_twitter_data = sc.textFile(twitter_file_list)
-    raw_twitter_json = raw_twitter_data.map(json.loads)
+    raw_twitter_json = raw_twitter_data.map(decode)
 
     # read twitter archive data and filter out those user who doesn't use
     # English and cannot be located in any US county

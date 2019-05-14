@@ -21,6 +21,27 @@ from collections import defaultdict
 from emoji import UNICODE_EMOJI
 
 
+def decode(line):
+    """
+    load intermediate file into json format, return a fake record
+    if the json.loads failed
+    """
+    try:
+        return json.loads(line)
+    except:
+        return ({
+            'user_id': None,
+            'lang': None,
+            'location': None,
+            'state': None,
+            'county': None,
+            'time_zone': None,
+            'text': None,
+            'created_at': None,
+            'geo': None
+        })
+
+
 def remove_trailing_chars(string):
     '''
     We observed cases where people reported their location to be Miamiiiiii instead of Miami. This helps catch such sitations
