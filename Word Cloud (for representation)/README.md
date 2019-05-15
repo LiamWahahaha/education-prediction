@@ -1,3 +1,0 @@
-[TODO] Delete folder   
-WRONG FILE NAME   
-NOT THIS ONE   
