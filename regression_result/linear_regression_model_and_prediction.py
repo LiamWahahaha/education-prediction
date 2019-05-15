@@ -50,7 +50,7 @@ from pprint import pprint
 ##################################
 # Control variables
 ##################################
-INTERMEDIATE_FILE = './twitter/p-2013.json'
+INTERMEDIATE_FILE = './twitter/p-2013.json,./twitter/p-2016.json,./twitter/p-2017.json'
 STOP_WORD_FILE = './StopWords.txt'
 WORD_COUNT_THRESHOLD = 3
 ALPHA = 0.05
@@ -369,6 +369,11 @@ if __name__ == "__main__":
     county_level_rdd = person_level_test_rdd.groupBy(lambda e: e["fip"]
                                                      ).mapValues(list)
     county_level_rdd = county_level_rdd.map(prediction2freq)
+
     pprint(county_level_rdd.take(50))
     result = county_level_rdd.collect()
     pprint(np.array([e[-1] for e in result]).mean())
+
+    df = pd.DataFrame(result)
+    df.to_csv('./predict_result.csv', index=False)
+
